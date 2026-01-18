@@ -17,7 +17,8 @@ class LauncherController extends Controller
      */
     public function checkRegistration(Request $request)
     {
-        $deviceId = $request->input('device_id');
+        $deviceId = strtoupper(trim($request->input('device_id')));
+        $deviceName = $request->input('device_name');
         
         if (empty($deviceId)) {
             return response()->json([
@@ -26,11 +27,37 @@ class LauncherController extends Controller
             ]);
         }
 
-        $isRegistered = ManagedDevice::where('device_id', $deviceId)->exists();
+        $device = ManagedDevice::where('device_id', $deviceId)->first();
+
+        if (!$device) {
+            // Auto-discover: create new device record as inactive
+            $device = ManagedDevice::create([
+                'device_id' => $deviceId,
+                'device_name' => $deviceName ?: ('New STB (' . $request->ip() . ')'),
+                'room_number' => '-',
+                'is_active' => false,
+                'ip_address' => $request->ip(),
+                'status_online' => 'online',
+                'last_seen' => now()
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'is_registered' => false,
+                'registration_code' => $device->registration_code
+            ]);
+        }
+
+        // Update last seen & IP
+        $device->update([
+            'last_seen' => now(),
+            'ip_address' => $request->ip(),
+            'status_online' => 'online'
+        ]);
 
         return response()->json([
             'status' => 'success',
-            'is_registered' => $isRegistered
+            'is_registered' => (bool)$device->is_active
         ]);
     }
 
@@ -158,17 +185,64 @@ class LauncherController extends Controller
     }
 
     /**
-     * Get weather data (placeholder - integrate with OpenWeather API)
+     * Get home menus
+     * GET /api/v1/home-menus
+     */
+    public function getHomeMenus(Request $request)
+    {
+        $lang = $request->query('lang', 'id');
+        
+        // Default menus if table doesn't exist yet
+        $menus = [
+            [
+                'menu_key' => 'tv',
+                'menu_name' => $lang == 'en' ? 'Live TV' : 'TV Langsung',
+                'icon_path' => url('img/menu/tv.png'),
+                'action_type' => 'function',
+                'action_value' => 'openTv'
+            ],
+            [
+                'menu_key' => 'apps',
+                'menu_name' => $lang == 'en' ? 'Apps' : 'Aplikasi',
+                'icon_path' => url('img/menu/apps.png'),
+                'action_type' => 'dialog',
+                'action_value' => 'apps'
+            ],
+            [
+                'menu_key' => 'info',
+                'menu_name' => $lang == 'en' ? 'Hotel Info' : 'Informasi Hotel',
+                'icon_path' => url('img/menu/info.png'),
+                'action_type' => 'dialog',
+                'action_value' => 'info'
+            ],
+            [
+                'menu_key' => 'dining',
+                'menu_name' => $lang == 'en' ? 'Dining' : 'Restoran',
+                'icon_path' => url('img/menu/dining.png'),
+                'action_type' => 'dialog',
+                'action_value' => 'dining'
+            ]
+        ];
+
+        return response()->json([
+            'status' => 'success',
+            'menus' => $menus
+        ]);
+    }
+
+    /**
+     * Get weather data
      * GET /api/launcher?action=getWeather
      */
-    public function getWeather()
+    public function getWeather(Request $request)
     {
+        $lang = $request->query('lang', 'id');
         // Placeholder - integrate with actual weather API
         return response()->json([
             'status' => 'success',
             'data' => [
                 'temp' => 28,
-                'description' => 'Cerah',
+                'description' => $lang == 'en' ? 'Sunny' : 'Cerah',
                 'icon' => '01d'
             ]
         ]);
@@ -188,8 +262,8 @@ class LauncherController extends Controller
             'status' => 'success',
             'data' => [
                 'title' => $title ? $title->setting_value : 'Welcome',
-                'message' => $message ? $message->setting_value : 'Welcome to our hotel!',
-                'image_url' => $image ? url($image->setting_value) : null
+                'content' => $message ? $message->setting_value : 'Welcome to our hotel!',
+                'image' => $image ? url($image->setting_value) : url('img/hotel3.png')
             ]
         ]);
     }
@@ -201,6 +275,7 @@ class LauncherController extends Controller
     public function handle(Request $request)
     {
         $action = $request->input('action');
+        \Log::info('Launcher API Request', ['action' => $action, 'device_id' => $request->input('device_id'), 'ip' => $request->ip()]);
 
         return match($action) {
             'checkRegistration' => $this->checkRegistration($request),

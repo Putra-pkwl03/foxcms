@@ -31,12 +31,13 @@ class DeviceController extends Controller
     {
         $validated = $request->validate([
             'device_id' => 'required|string|max:100|unique:managed_devices',
+            'registration_code' => 'nullable|string|max:20|unique:managed_devices',
             'device_name' => 'required|string|max:100',
             'room_number' => 'required|string|max:10',
-            'is_active' => 'boolean',
+            'notes' => 'nullable|string',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = false; // Default to inactive for manual registration
 
         \App\Models\ManagedDevice::create($validated);
 
@@ -59,12 +60,11 @@ class DeviceController extends Controller
     {
         $validated = $request->validate([
             'device_id' => 'required|string|max:100|unique:managed_devices,device_id,' . $id,
+            'registration_code' => 'nullable|string|max:20|unique:managed_devices,registration_code,' . $id,
             'device_name' => 'required|string|max:100',
             'room_number' => 'required|string|max:10',
-            'is_active' => 'boolean',
+            'notes' => 'nullable|string',
         ]);
-
-        $validated['is_active'] = $request->has('is_active');
 
         $device = \App\Models\ManagedDevice::findOrFail($id);
         $device->update($validated);
@@ -81,5 +81,109 @@ class DeviceController extends Controller
         $device->delete();
 
         return redirect()->route('admin.devices.index')->with('success', 'Device deleted successfully.');
+    }
+
+    /**
+     * Toggle device active status.
+     */
+    public function toggleActive(string $id)
+    {
+        $device = \App\Models\ManagedDevice::findOrFail($id);
+        $device->is_active = !$device->is_active;
+        
+        // If activating and was never registered, set registered_at
+        if ($device->is_active && !$device->registered_at) {
+            $device->registered_at = now();
+        }
+        
+        $device->save();
+
+        $status = $device->is_active ? 'activated' : 'deactivated';
+        return redirect()->route('admin.devices.index')->with('success', "Device has been $status.");
+    }
+
+    /**
+     * Show device tools page.
+     */
+    public function tools(string $id)
+    {
+        $device = \App\Models\ManagedDevice::findOrFail($id);
+        return view('admin.devices.tools', compact('device'));
+    }
+
+    /**
+     * Execute ADB tool command.
+     */
+    public function executeToolCommand(Request $request, string $id)
+    {
+        $device = \App\Models\ManagedDevice::findOrFail($id);
+        $command = $request->input('command');
+        $ip = $device->ip_address;
+
+        if (!$ip) {
+            return response()->json(['status' => 'error', 'message' => 'IP Address not found. Connect device first.']);
+        }
+
+        // ADB Path - Using local binary in storage/adb
+        $adbPath = storage_path('adb/adb.exe'); 
+        
+        // Check if device is connected, if not try to connect
+        exec("\"$adbPath\" connect $ip:5555 2>&1", $connectOutput);
+        
+        $result = "";
+        $success = true;
+
+        try {
+            switch($command) {
+                case 'reboot':
+                    exec("\"$adbPath\" -s $ip:5555 reboot 2>&1", $out);
+                    $result = "Device is rebooting...";
+                    break;
+                case 'clear_cache':
+                    // Need SystemApp model to get packages
+                    $packages = \App\Models\SystemApp::whereNotNull('android_package')->pluck('android_package')->toArray();
+                    if (empty($packages)) {
+                        $packages = ['com.android.chrome', 'com.google.android.youtube']; // Fallback
+                    }
+                    foreach ($packages as $pkg) {
+                        exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1");
+                    }
+                    $result = "Guest data & cache cleared for all apps.";
+                    break;
+                case 'home':
+                    exec("\"$adbPath\" -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
+                    $result = "Device returned to Home Screen.";
+                    break;
+                case 'set_owner':
+                    exec("\"$adbPath\" -s $ip:5555 shell dpm set-device-owner com.takeoff.launcher/.MyDeviceAdminReceiver 2>&1", $out);
+                    $result = "Set Device Owner command sent. Check device screen.";
+                    break;
+                case 'set_default_launcher':
+                    exec("\"$adbPath\" -s $ip:5555 shell pm disable-user com.google.android.tvlauncher 2>&1");
+                    exec("\"$adbPath\" -s $ip:5555 shell cmd package set-home-activity com.takeoff.launcher/.MainActivity 2>&1");
+                    $result = "TakeOff Launcher set as default system home.";
+                    break;
+                case 'logs':
+                    exec("\"$adbPath\" -s $ip:5555 logcat -d *:W 2>&1", $logOutput);
+                    $slicedLogs = array_slice($logOutput, -100);
+                    $logsStr = implode("\n", $slicedLogs);
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Logs fetched successfully',
+                        'data' => $logsStr ?: "No logs found or device is offline."
+                    ]);
+                default:
+                    $success = false;
+                    $result = "Unknown command.";
+            }
+        } catch (\Exception $e) {
+            $success = false;
+            $result = "Error: " . $e->getMessage();
+        }
+
+        return response()->json([
+            'status' => $success ? 'success' : 'error',
+            'message' => $result
+        ]);
     }
 }

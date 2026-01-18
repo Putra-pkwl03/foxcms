@@ -49,7 +49,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <x-larastrap::text name="custom_greeting_image" label="Greeting Image URL/Path" :value="$settings['custom_greeting_image'] ?? ''" placeholder="https://example.com/image.jpg" />
+                            <x-larastrap::text name="custom_greeting_image" label="Greeting Image URL/Path" :value="$settings['custom_greeting_image'] ?? ''" placeholder="assets/wallpapers/hotel_exterior.png" />
+                            <small class="text-muted text-xs">Recommended: <code>assets/wallpapers/hotel_exterior.png</code> (Locally available)</small>
                         </div>
                     </div>
 
@@ -60,12 +61,20 @@
                     
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3">
-                            <x-larastrap::text name="launcher_home_bg" label="Home Background URL/Path" :value="$settings['launcher_home_bg'] ?? ''" />
+                            <x-larastrap::text name="launcher_home_bg" label="Home Background URL/Path" :value="$settings['launcher_home_bg'] ?? ''" placeholder="assets/wallpapers/main_bg.jpg" />
+                            <small class="text-muted text-xs">Local path: <code>assets/wallpapers/main_bg.jpg</code></small>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <x-larastrap::text name="loading_logo_url" label="Loading Logo URL/Path" :value="$settings['loading_logo_url'] ?? ''" />
+                            <x-larastrap::text name="loading_logo_url" label="Loading Logo URL/Path" :value="$settings['loading_logo_url'] ?? ''" placeholder="assets/img/logo.png" />
+                            <small class="text-muted text-xs">Local path: <code>assets/img/logo.png</code></small>
                         </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Intro Video Path</label>
+                        <x-larastrap::text name="intro_video_url" label="Intro Video URL/Path" :value="$settings['intro_video_url'] ?? ''" placeholder="assets/videos/opening.mp4" />
+                        <small class="text-muted text-xs">Local path: <code>assets/videos/opening.mp4</code></small>
                     </div>
 
                     <div class="d-flex justify-content-end pt-3 border-top">

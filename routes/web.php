@@ -8,6 +8,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('dining-menu', App\Http\Controllers\Admin\DiningMenuController::class);
     Route::resource('devices', App\Http\Controllers\Admin\DeviceController::class);
+    Route::post('devices/{id}/toggle-active', [App\Http\Controllers\Admin\DeviceController::class, 'toggleActive'])->name('devices.toggle-active');
+    Route::get('devices/{id}/tools', [App\Http\Controllers\Admin\DeviceController::class, 'tools'])->name('devices.tools');
+    Route::post('devices/{id}/tools/execute', [App\Http\Controllers\Admin\DeviceController::class, 'executeToolCommand'])->name('devices.tools.execute');
     Route::resource('facilities', App\Http\Controllers\Admin\FacilityController::class);
     Route::resource('system-apps', App\Http\Controllers\Admin\SystemAppController::class);
     Route::resource('checkin', App\Http\Controllers\Admin\CheckinController::class);
