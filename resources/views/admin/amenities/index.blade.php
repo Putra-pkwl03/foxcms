@@ -1,0 +1,61 @@
+@extends('layouts.admin')
+
+@section('page-title', 'Room Amenities')
+
+@section('content')
+<div class="row mb-3">
+    <div class="col-12 text-end">
+        <a href="{{ route('admin.amenities.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Add Amenity Item
+        </a>
+    </div>
+</div>
+
+<div class="card premium-card">
+    <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Amenities Catalog</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($amenities as $amenity)
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ $amenity->name }}</div>
+                            <small class="text-muted">{{ $amenity->name_en }}</small>
+                        </td>
+                        <td><span class="badge bg-info text-dark">{{ Str::headline($amenity->category) }}</span></td>
+                        <td><small>{{ Str::limit($amenity->description, 50) }}</small></td>
+                        <td>
+                            <a href="{{ route('admin.amenities.edit', $amenity->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ route('admin.amenities.destroy', $amenity->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">No amenity items found.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection
