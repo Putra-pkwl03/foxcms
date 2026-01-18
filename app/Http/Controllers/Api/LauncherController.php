@@ -57,7 +57,8 @@ class LauncherController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'is_registered' => (bool)$device->is_active
+            'is_registered' => (bool)$device->is_active,
+            'registration_code' => $device->registration_code
         ]);
     }
 
@@ -206,7 +207,7 @@ class LauncherController extends Controller
                 'menu_name' => $lang == 'en' ? 'Apps' : 'Aplikasi',
                 'icon_path' => url('img/menu/apps.png'),
                 'action_type' => 'dialog',
-                'action_value' => 'apps'
+                'action_value' => 'show_apps_dialog'
             ],
             [
                 'menu_key' => 'info',
@@ -221,6 +222,13 @@ class LauncherController extends Controller
                 'icon_path' => url('img/menu/dining.png'),
                 'action_type' => 'dialog',
                 'action_value' => 'dining'
+            ],
+            [
+                'menu_key' => 'clear_cache',
+                'menu_name' => $lang == 'en' ? 'Clear Cache' : 'Hapus Cache',
+                'icon_path' => url('img/menu/cache.png'),
+                'action_type' => 'function',
+                'action_value' => 'clear_cache'
             ]
         ];
 
@@ -287,10 +295,59 @@ class LauncherController extends Controller
             'getHomeBackground' => $this->getHomeBackground(),
             'getWeather' => $this->getWeather(),
             'getCustomGreeting' => $this->getCustomGreeting(),
+            'clearDeviceData' => $this->clearDeviceData($request),
             default => response()->json([
                 'status' => 'error',
                 'message' => 'Aksi tidak dikenal'
             ])
         };
+    }
+
+    /**
+     * Clear Cache & Data remotely via ADB when requested by STB
+     * GET /api/v1/remote-clear
+     */
+    public function clearDeviceData(Request $request) 
+    {
+        try {
+            $ip = $request->ip();
+            
+            // ADB Path
+            $adbPath = storage_path('adb/adb.exe');
+            if (!file_exists($adbPath)) {
+                return response()->json(['status' => 'error', 'message' => 'ADB tools not found on server'], 500);
+            }
+
+            // Connect to device
+            exec("\"$adbPath\" connect $ip:5555 2>&1");
+            
+            // List of packages to clear
+            // In a real scenario, fetch this from SystemApp model where android_package is not null
+            // For now, use the same default list as AHF-APP + browsers
+            $packages = [
+                'com.android.chrome',
+                'com.google.android.webview', 
+                'org.mozilla.firefox',
+                'com.opera.browser',
+                'com.google.android.youtube',
+                'com.google.android.youtube.tv'
+            ];
+            
+            $results = [];
+            foreach ($packages as $pkg) {
+                exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
+                $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed/Not Found';
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'target_ip' => $ip,
+                'message' => 'Cache clearing commands executed',
+                'results' => $results
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
     }
 }

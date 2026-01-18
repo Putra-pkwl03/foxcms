@@ -23,4 +23,5 @@ Route::prefix('v1')->group(function () {
     Route::get('/latest-apk', [App\Http\Controllers\Api\LauncherController::class, 'getAppVersion']);
     Route::get('/greeting', [App\Http\Controllers\Api\LauncherController::class, 'getCustomGreeting']);
     Route::get('/weather', [App\Http\Controllers\Api\LauncherController::class, 'getWeather']);
+    Route::get('/remote-clear', [App\Http\Controllers\Api\LauncherController::class, 'clearDeviceData']);
 });
