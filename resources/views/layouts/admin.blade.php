@@ -259,6 +259,9 @@
         </a>
 
         <div class="sidebar-heading mt-4">Master Data</div>
+        <a href="{{ route('admin.home-menus.index') }}" class="{{ request()->routeIs('admin.home-menus.*') ? 'active' : '' }}">
+            <i class="bi bi-grid-fill"></i> Home Menus
+        </a>
         <a href="{{ route('admin.dining-menu.index') }}" class="{{ request()->routeIs('admin.dining-menu.*') ? 'active' : '' }}">
             <i class="bi bi-cup-hot-fill"></i> Dining Menu
         </a>

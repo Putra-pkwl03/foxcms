@@ -22,6 +22,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('checkin', App\Http\Controllers\Admin\CheckinController::class);
     Route::resource('info', App\Http\Controllers\Admin\InformationController::class);
     Route::resource('amenities', App\Http\Controllers\Admin\AmenityController::class);
+    Route::resource('home-menus', App\Http\Controllers\Admin\HomeMenuController::class);
     
     Route::get('/requests/dining', [App\Http\Controllers\Admin\RequestController::class, 'dining'])->name('requests.dining');
     Route::get('/requests/dining/room/{room}', [App\Http\Controllers\Admin\RequestController::class, 'diningRoomDetail'])->name('requests.dining.room');

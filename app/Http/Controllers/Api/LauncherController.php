@@ -225,58 +225,24 @@ class LauncherController extends Controller
     {
         $lang = $request->query('lang', 'id');
         
-        // Default menus if table doesn't exist yet
-        $menus = [
-            [
-                'menu_key' => 'tv',
-                'menu_name' => $lang == 'en' ? 'Live TV' : 'TV Langsung',
-                'icon_path' => url('img/menu/tv.png'),
-                'action_type' => 'function',
-                'action_value' => 'openTv'
-            ],
-            [
-                'menu_key' => 'apps',
-                'menu_name' => $lang == 'en' ? 'Apps' : 'Aplikasi',
-                'icon_path' => url('img/menu/apps.png'),
-                'action_type' => 'dialog',
-                'action_value' => 'show_apps_dialog'
-            ],
-            [
-                'menu_key' => 'info',
-                'menu_name' => $lang == 'en' ? 'Hotel Info' : 'Informasi Hotel',
-                'icon_path' => url('img/menu/info.png'),
-                'action_type' => 'dialog',
-                'action_value' => 'info'
-            ],
-            [
-                'menu_key' => 'dining',
-                'menu_name' => $lang == 'en' ? 'Dining' : 'Restoran',
-                'icon_path' => url('img/menu/dining.png'),
-                'action_type' => 'dialog',
-                'action_value' => 'dining'
-            ],
-            [
-                'menu_key' => 'amenities',
-                'menu_name' => 'Amenities',
-                'icon_path' => url('img/menu/amenities.png'),
-                'action_type' => 'dialog',
-                'action_value' => 'amenities'
-            ],
-            [
-                'menu_key' => 'facilities',
-                'menu_name' => $lang == 'en' ? 'Facilities' : 'Fasilitas Hotel',
-                'icon_path' => url('img/menu/facilities.png'),
-                'action_type' => 'dialog',
-                'action_value' => 'facilities'
-            ],
-            [
-                'menu_key' => 'clear_cache',
-                'menu_name' => $lang == 'en' ? 'Clear Cache' : 'Hapus Cache',
-                'icon_path' => url('img/menu/cache.png'),
-                'action_type' => 'function',
-                'action_value' => 'clear_cache'
-            ]
-        ];
+        $menus = \App\Models\HomeMenu::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        $menus = $menus->map(function ($menu) use ($lang) {
+            $iconPath = $menu->icon_path;
+            if (!empty($iconPath) && !preg_match('~^https?://~', $iconPath)) {
+                $iconPath = url($iconPath);
+            }
+
+            return [
+                'menu_key' => $menu->menu_key,
+                'menu_name' => $lang == 'en' ? ($menu->menu_name_en ?: $menu->menu_name) : $menu->menu_name,
+                'icon_path' => $iconPath,
+                'action_type' => $menu->action_type,
+                'action_value' => $menu->action_value
+            ];
+        });
 
         return response()->json([
             'status' => 'success',
