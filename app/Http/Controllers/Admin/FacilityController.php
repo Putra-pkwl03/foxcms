@@ -36,10 +36,16 @@ class FacilityController extends Controller
             'description_en' => 'nullable|string',
             'is_active' => 'boolean',
             'show_description' => 'boolean',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['show_description'] = $request->has('show_description');
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('facilities', 'public');
+            $validated['icon_path'] = 'storage/' . $path;
+        }
 
         \App\Models\HotelFacility::create($validated);
 
@@ -67,12 +73,24 @@ class FacilityController extends Controller
             'description_en' => 'nullable|string',
             'is_active' => 'boolean',
             'show_description' => 'boolean',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         $validated['is_active'] = $request->has('is_active');
         $validated['show_description'] = $request->has('show_description');
 
         $facility = \App\Models\HotelFacility::findOrFail($id);
+
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($facility->icon_path && file_exists(public_path($facility->icon_path))) {
+                @unlink(public_path($facility->icon_path));
+            }
+
+            $path = $request->file('image')->store('facilities', 'public');
+            $validated['icon_path'] = 'storage/' . $path;
+        }
+
         $facility->update($validated);
 
         return redirect()->route('admin.facilities.index')->with('success', 'Facility updated successfully.');
@@ -84,6 +102,11 @@ class FacilityController extends Controller
     public function destroy(string $id)
     {
         $facility = \App\Models\HotelFacility::findOrFail($id);
+        
+        if ($facility->icon_path && file_exists(public_path($facility->icon_path))) {
+            @unlink(public_path($facility->icon_path));
+        }
+        
         $facility->delete();
 
         return redirect()->route('admin.facilities.index')->with('success', 'Facility deleted successfully.');

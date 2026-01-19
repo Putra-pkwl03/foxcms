@@ -10,7 +10,7 @@
                 <h5 class="card-title mb-0">Edit Amenity Configuration</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.amenities.update', $amenity->id) }}" method="POST">
+                <form action="{{ route('admin.amenities.update', $amenity->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -24,6 +24,17 @@
 
                     <div class="mb-3">
                         <x-larastrap::text name="category" label="Category" :value="$amenity->category" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Icon / Image</label>
+                        @if($amenity->icon_path)
+                            <div class="mb-2">
+                                <img src="{{ asset($amenity->icon_path) }}" alt="Current Icon" class="img-thumbnail" style="max-height: 80px">
+                            </div>
+                        @endif
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div class="form-text">Leave empty to keep current. Recommended: Transparent PNG or SVG</div>
                     </div>
 
                     <div class="mb-3">

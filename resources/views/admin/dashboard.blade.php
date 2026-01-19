@@ -392,57 +392,27 @@
                 <h5 class="card-title mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Activity</h5>
             </div>
             <div class="card-body">
-                <div class="activity-item">
-                    <div class="d-flex align-items-start">
-                        <div class="activity-icon bg-primary bg-opacity-10 text-primary">
-                            <i class="bi bi-person-check"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">New Guest Check-In</h6>
-                            <p class="text-muted mb-1 small">Guest #{{ $stats['guests'] }} has checked in to Room 305</p>
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i>2 minutes ago</small>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="d-flex align-items-start">
-                        <div class="activity-icon bg-success bg-opacity-10 text-success">
-                            <i class="bi bi-bag-check"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">Dining Order Completed</h6>
-                            <p class="text-muted mb-1 small">Order #1234 delivered to Room 201</p>
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i>15 minutes ago</small>
+                @if(count($recent_activities) > 0)
+                    @foreach($recent_activities as $activity)
+                    <div class="activity-item">
+                        <div class="d-flex align-items-start">
+                            <div class="activity-icon bg-{{ $activity['color'] }} bg-opacity-10 text-{{ $activity['color'] }}">
+                                <i class="bi {{ $activity['icon'] }}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1 fw-bold">{{ $activity['title'] }}</h6>
+                                <p class="text-muted mb-1 small">{{ $activity['description'] }}</p>
+                                <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ $activity['time']->diffForHumans() }}</small>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="d-flex align-items-start">
-                        <div class="activity-icon bg-info bg-opacity-10 text-info">
-                            <i class="bi bi-display"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">Device Status Update</h6>
-                            <p class="text-muted mb-1 small">Device "Lobby-TV-01" is now online</p>
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i>1 hour ago</small>
-                        </div>
+                    @endforeach
+                @else
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1 mb-2 d-block"></i>
+                        No recent activity found.
                     </div>
-                </div>
-
-                <div class="activity-item">
-                    <div class="d-flex align-items-start">
-                        <div class="activity-icon bg-warning bg-opacity-10 text-warning">
-                            <i class="bi bi-hand-thumbs-up"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">Amenity Request</h6>
-                            <p class="text-muted mb-1 small">Room 405 requested extra towels</p>
-                            <small class="text-muted"><i class="bi bi-clock me-1"></i>2 hours ago</small>
-                        </div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -533,7 +503,7 @@
         data: {
             labels: ['Dining', 'Amenities', 'Facilities', 'Info'],
             datasets: [{
-                data: [{{ $stats['dining'] }}, 15, {{ $stats['facilities'] }}, 8],
+                data: [{{ $stats['dining'] }}, {{ $stats['amenities_count'] }}, {{ $stats['facilities'] }}, {{ $stats['info_count'] }}],
                 backgroundColor: [
                     'rgba(102, 126, 234, 0.8)',
                     'rgba(17, 153, 142, 0.8)',

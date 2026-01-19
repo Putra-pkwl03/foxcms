@@ -10,7 +10,7 @@
                 <h5 class="card-title mb-0">Edit Menu Item</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.dining-menu.update', $item->id) }}" method="POST">
+                <form action="{{ route('admin.dining-menu.update', $item->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -28,6 +28,17 @@
                     
                     <div class="mb-3">
                         <x-larastrap::number name="price" label="Price (Rp)" :value="$item->price" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Image</label>
+                        @if($item->image_url)
+                            <div class="mb-2">
+                                <img src="{{ asset($item->image_url) }}" alt="Current Image" class="img-thumbnail" style="max-height: 150px">
+                            </div>
+                        @endif
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div class="form-text">Leave empty to keep current image.</div>
                     </div>
 
                     <div class="mb-3">

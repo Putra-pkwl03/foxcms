@@ -305,7 +305,15 @@
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2">
                     <li><a class="dropdown-item rounded-2 py-2" href="#"><i class="bi bi-person me-2"></i> Profile</a></li>
-                    <li><a class="dropdown-item rounded-2 py-2 text-danger font-bold" href="#"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                    <li>
+                        <a class="dropdown-item rounded-2 py-2 text-danger font-bold" href="#" 
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -22,6 +22,7 @@
                     <tr>
                         <th>Icon</th>
                         <th>Name</th>
+                        <th>Description</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -42,6 +43,7 @@
                             <div class="fw-bold">{{ $facility->name }}</div>
                             <small class="text-muted">{{ $facility->name_en }}</small>
                         </td>
+                        <td><small>{{ Str::limit($facility->description, 50) }}</small></td>
                         <td>
                             <span class="badge bg-{{ $facility->is_active ? 'success' : 'secondary' }}">
                                 {{ $facility->is_active ? 'Active' : 'Inactive' }}
@@ -62,7 +64,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No facilities found.</td>
+                        <td colspan="5" class="text-center text-muted py-4">No facilities found.</td>
                     </tr>
                     @endforelse
                 </tbody>

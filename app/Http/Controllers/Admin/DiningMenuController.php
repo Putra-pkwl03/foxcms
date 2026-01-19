@@ -35,7 +35,13 @@ class DiningMenuController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|integer|min:0',
             'status' => 'required|in:active,inactive',
+            'image' => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('dining_menus', 'public');
+            $validated['image_url'] = 'storage/' . $path;
+        }
 
         \App\Models\DiningMenu::create($validated);
 
@@ -70,9 +76,21 @@ class DiningMenuController extends Controller
             'description' => 'nullable|string',
             'price' => 'required|integer|min:0',
             'status' => 'required|in:active,inactive',
+            'image' => 'nullable|image|max:2048',
         ]);
 
         $item = \App\Models\DiningMenu::findOrFail($id);
+
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($item->image_url && file_exists(public_path($item->image_url))) {
+                @unlink(public_path($item->image_url));
+            }
+
+            $path = $request->file('image')->store('dining_menus', 'public');
+            $validated['image_url'] = 'storage/' . $path;
+        }
+
         $item->update($validated);
 
         return redirect()->route('admin.dining-menu.index')->with('success', 'Menu updated successfully.');
@@ -84,6 +102,11 @@ class DiningMenuController extends Controller
     public function destroy(string $id)
     {
         $item = \App\Models\DiningMenu::findOrFail($id);
+        
+        if ($item->image_url && file_exists(public_path($item->image_url))) {
+            @unlink(public_path($item->image_url));
+        }
+
         $item->delete();
 
         return redirect()->route('admin.dining-menu.index')->with('success', 'Menu deleted successfully.');

@@ -1,0 +1,1 @@
+use Illuminate\Http\Request; \ = Request::create('/api/v1/check-registration', 'GET', ['device_id' => '43899ab72190af71', 'device_name' => 'Android TV']); \ = new App\Http\Controllers\Api\LauncherController(); echo json_encode(\->checkRegistration(\)->getData());

@@ -4,7 +4,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/admin');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+use App\Http\Controllers\Auth\LoginController;
+
+Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('login', [LoginController::class, 'login']);
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('dining-menu', App\Http\Controllers\Admin\DiningMenuController::class);
     Route::resource('devices', App\Http\Controllers\Admin\DeviceController::class);
@@ -18,9 +24,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('amenities', App\Http\Controllers\Admin\AmenityController::class);
     
     Route::get('/requests/dining', [App\Http\Controllers\Admin\RequestController::class, 'dining'])->name('requests.dining');
+    Route::get('/requests/dining/room/{room}', [App\Http\Controllers\Admin\RequestController::class, 'diningRoomDetail'])->name('requests.dining.room');
     Route::post('/requests/dining/{id}', [App\Http\Controllers\Admin\RequestController::class, 'updateDiningStatus'])->name('requests.dining.update');
     
     Route::get('/requests/amenities', [App\Http\Controllers\Admin\RequestController::class, 'amenities'])->name('requests.amenities');
+    Route::get('/requests/amenities/room/{room}', [App\Http\Controllers\Admin\RequestController::class, 'amenityRoomDetail'])->name('requests.amenities.room');
     Route::post('/requests/amenities/{id}', [App\Http\Controllers\Admin\RequestController::class, 'updateAmenityStatus'])->name('requests.amenities.update');
     
     Route::get('/settings/marquee', [App\Http\Controllers\Admin\SettingController::class, 'marquee'])->name('settings.marquee');

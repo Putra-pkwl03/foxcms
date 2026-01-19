@@ -10,7 +10,7 @@
                 <h5 class="card-title mb-0">New Menu Item</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.dining-menu.store') }}" method="POST">
+                <form action="{{ route('admin.dining-menu.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     
                     <div class="mb-3">
@@ -27,6 +27,12 @@
                     
                     <div class="mb-3">
                         <x-larastrap::number name="price" label="Price (Rp)" value="0" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div class="form-text">Recommended size: 400x300px</div>
                     </div>
 
                     <div class="mb-3">

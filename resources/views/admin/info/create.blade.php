@@ -10,8 +10,17 @@
                 <h5 class="card-title mb-0">New Information Page</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.info.store') }}" method="POST">
+                <form action="{{ route('admin.info.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Banner Image / Icon</label>
+                        <input type="file" name="image" id="image" class="form-control @error('image') is-invalid @enderror">
+                        <div class="form-text">Recommended size: 1920x1080 for full slide or square for icon.</div>
+                        @error('image')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                     
                     <div class="mb-3">
                         <x-larastrap::text name="title" label="Title (ID)" required />

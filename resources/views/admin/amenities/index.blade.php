@@ -20,6 +20,7 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 60px">Icon</th>
                         <th>Item Name</th>
                         <th>Category</th>
                         <th>Description</th>
@@ -29,6 +30,15 @@
                 <tbody>
                     @forelse($amenities as $amenity)
                     <tr>
+                        <td>
+                            @if($amenity->icon_path)
+                                <img src="{{ asset($amenity->icon_path) }}" alt="" style="height: 40px; width: 40px; object-fit: contain;">
+                            @else
+                                <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 40px; width: 40px; border-radius: 4px;">
+                                    <i class="bi bi-box"></i>
+                                </div>
+                            @endif
+                        </td>
                         <td>
                             <div class="fw-bold">{{ $amenity->name }}</div>
                             <small class="text-muted">{{ $amenity->name_en }}</small>
@@ -50,7 +60,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No amenity items found.</td>
+                        <td colspan="5" class="text-center text-muted py-4">No amenity items found.</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -10,7 +10,7 @@
                 <h5 class="card-title mb-0">New Amenity Configuration</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.amenities.store') }}" method="POST">
+                <form action="{{ route('admin.amenities.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     
                     <div class="mb-3">
@@ -23,6 +23,12 @@
 
                     <div class="mb-3">
                         <x-larastrap::text name="category" label="Category" placeholder="e.g. Bathroom, Bedding, Food" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Icon / Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div class="form-text">Recommended: Transparent PNG or SVG</div>
                     </div>
 
                     <div class="mb-3">

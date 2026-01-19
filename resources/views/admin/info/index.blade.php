@@ -31,9 +31,13 @@
                     @forelse($infos as $info)
                     <tr>
                         <td>
-                            <div class="bg-light d-flex align-items-center justify-content-center border rounded" style="width:40px; height:40px;">
-                                <i class="bi bi-info-circle text-muted"></i>
-                            </div>
+                            @if($info->icon_path)
+                                <img src="{{ asset($info->icon_path) }}" class="rounded shadow-sm" style="width:40px; height:40px; object-fit:cover;" alt="">
+                            @else
+                                <div class="bg-light d-flex align-items-center justify-content-center border rounded" style="width:40px; height:40px;">
+                                    <i class="bi bi-image text-muted"></i>
+                                </div>
+                            @endif
                         </td>
                         <td>
                             <div class="fw-bold">{{ $info->title }}</div>

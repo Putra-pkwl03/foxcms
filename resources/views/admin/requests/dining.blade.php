@@ -3,84 +3,74 @@
 @section('page-title', 'Dining Orders')
 
 @section('content')
-<div class="card premium-card">
-    <div class="card-header bg-white">
-        <h5 class="card-title mb-0">Active Dining Orders</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Room</th>
-                        <th>Guest</th>
-                        <th>Items</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($orders as $order)
-                    <tr>
-                        <td><code>#{{ $order->id }}</code></td>
-                        <td><span class="fw-bold">{{ $order->room_number }}</span></td>
-                        <td>{{ $order->guest_name }}</td>
-                        <td>
-                            <small>{{ $order->items }}</small>
-                        </td>
-                        <td>Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
-                        <td>
-                            @php
-                                $colors = [
-                                    'Pending' => 'warning',
-                                    'Confirmed' => 'info',
-                                    'Delivered' => 'success',
-                                    'Cancelled' => 'danger'
-                                ];
-                            @endphp
-                            <span class="badge bg-{{ $colors[$order->status] ?? 'secondary' }}">
-                                {{ $order->status }}
-                            </span>
-                        </td>
-                        <td>{{ $order->created_at->diffForHumans() }}</td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    Update
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('status-form-{{ $order->id }}-confirmed').submit();">Confirm</a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('status-form-{{ $order->id }}-delivered').submit();">Deliver</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('status-form-{{ $order->id }}-cancelled').submit();">Cancel</a></li>
-                                </ul>
-                            </div>
-                            
-                            <form id="status-form-{{ $order->id }}-confirmed" action="{{ route('requests.dining.update', $order->id) }}" method="POST" style="display: none;">
-                                @csrf
-                                <input type="hidden" name="status" value="Confirmed">
-                            </form>
-                            <form id="status-form-{{ $order->id }}-delivered" action="{{ route('requests.dining.update', $order->id) }}" method="POST" style="display: none;">
-                                @csrf
-                                <input type="hidden" name="status" value="Delivered">
-                            </form>
-                            <form id="status-form-{{ $order->id }}-cancelled" action="{{ route('requests.dining.update', $order->id) }}" method="POST" style="display: none;">
-                                @csrf
-                                <input type="hidden" name="status" value="Cancelled">
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">No dining orders yet.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+<!-- Active Orders Section -->
+<div class="mb-4">
+    <h5 class="mb-3 text-primary fw-bold"><i class="bi bi-hourglass-split me-2"></i>Active Orders (Pending / Confirmed)</h5>
+    
+    @forelse($activeOrders as $room => $orders)
+        @php
+            $roomTotal = $orders->sum('total_price');
+            $firstOrder = $orders->first();
+            $guestName = $firstOrder->guest_name ?? 'Unknown';
+            $bgClass = $orders->contains('status', 'Pending') ? 'border-warning' : 'border-info';
+        @endphp
+        <div class="card premium-card mb-3 {{ $bgClass }}" style="border-left: 5px solid;">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="mb-0 fw-bold">Room {{ $room }} <span class="text-muted fs-6">({{ $guestName }})</span></h5>
+                        <small class="text-muted">{{ $orders->count() }} Items Ordered</small>
+                    </div>
+    
+                </div>
+                <div class="text-end">
+                    <h4 class="mb-0 fw-bold text-success">Rp {{ number_format($roomTotal, 0, ',', '.') }}</h4>
+                    <span class="badge bg-light text-dark border">Total Bill</span>
+                </div>
+            </div>
+            <div class="card-body bg-light-subtle">
+                <div class="row align-items-center">
+                    <div class="col-md-9">
+                        <small class="text-secondary text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Order Summary</small>
+                        @php
+                            $names = $orders->map(function($o) {
+                                return $o->items; // Assumes 'items' is the string name like "Nasi Goreng (2)"
+                            })->take(5);
+                            $remaining = $orders->count() - 5;
+                        @endphp
+                        <p class="mb-2 mt-1 fw-medium text-dark">
+                            @foreach($names as $name)
+                                <i class="bi bi-dot"></i> {{ $name }} 
+                            @endforeach
+                            @if($remaining > 0)
+                                <span class="text-muted fst-italic">+ {{ $remaining }} more items...</span>
+                            @endif
+                        </p>
+                        <div>
+                            @foreach($orders->pluck('status')->unique() as $status)
+                                <span class="badge bg-{{ $status == 'Pending' ? 'warning' : 'info' }} border border-{{ $status == 'Pending' ? 'warning' : 'info' }} bg-opacity-10 text-{{ $status == 'Pending' ? 'dark' : 'dark' }}">
+                                    {{ $status }}
+                                </span>
+                            @endforeach
+                            <small class="text-muted ms-2"><i class="bi bi-clock me-1"></i>Last update: {{ $orders->max('updated_at')->diffForHumans() }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end d-none d-md-block">
+                        <a href="{{ route('admin.requests.dining.room', $room) }}" class="btn btn-outline-primary stretched-link">
+                            View Full Details <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+    @empty
+        <div class="alert alert-light border shadow-sm text-center py-4">
+            <i class="bi bi-check-circle text-muted fs-1 d-block mb-2"></i>
+            No active orders at the moment.
+        </div>
+    @endforelse
 </div>
+
+
 @endsection

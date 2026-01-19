@@ -20,6 +20,7 @@
             <table class="table table-hover align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 80px">Image</th>
                         <th>Name</th>
                         <th>Price</th>
                         <th>Status</th>
@@ -29,6 +30,15 @@
                 <tbody>
                     @forelse($items as $item)
                     <tr>
+                        <td>
+                            @if($item->image_url)
+                                <img src="{{ asset($item->image_url) }}" alt="" style="height: 50px; width: 50px; object-fit: cover; border-radius: 8px;">
+                            @else
+                                <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="height: 50px; width: 50px; border-radius: 8px;">
+                                    <i class="bi bi-image"></i>
+                                </div>
+                            @endif
+                        </td>
                         <td>
                             <div class="fw-bold">{{ $item->name }}</div>
                             <small class="text-muted">{{ $item->name_en }}</small>
@@ -54,7 +64,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted py-4">No items found.</td>
+                        <td colspan="5" class="text-center text-muted py-4">No items found.</td>
                     </tr>
                     @endforelse
                 </tbody>

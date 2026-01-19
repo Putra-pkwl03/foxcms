@@ -10,7 +10,7 @@
                 <h5 class="card-title mb-0">Edit Hotel Facility</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('admin.facilities.update', $facility->id) }}" method="POST">
+                <form action="{{ route('admin.facilities.update', $facility->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     
@@ -20,6 +20,17 @@
 
                     <div class="mb-3">
                         <x-larastrap::text name="name_en" label="Facility Name (EN)" :value="$facility->name_en" />
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Image / Icon</label>
+                        @if($facility->icon_path)
+                            <div class="mb-2">
+                                <img src="{{ asset($facility->icon_path) }}" alt="Current Image" class="img-thumbnail" style="max-height: 150px">
+                            </div>
+                        @endif
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <div class="form-text">Leave empty to keep current. Recommended size: 800x600px</div>
                     </div>
 
                     <div class="mb-3">

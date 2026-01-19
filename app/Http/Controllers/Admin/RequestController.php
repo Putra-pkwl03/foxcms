@@ -9,14 +9,48 @@ class RequestController extends Controller
 {
     public function dining()
     {
-        $orders = \App\Models\HotelOrder::orderBy('created_at', 'desc')->get();
-        return view('admin.requests.dining', compact('orders'));
+        // Active orders: Pending or Confirmed
+        $activeOrders = \App\Models\HotelOrder::whereIn('status', ['Pending', 'Confirmed'])
+            ->orderBy('created_at', 'asc') // Oldest first for active
+            ->get()
+            ->groupBy('room_number'); // Group by room
+
+        // History: Delivered or Cancelled
+        $historyOrders = \App\Models\HotelOrder::whereIn('status', ['Delivered', 'Cancelled'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.requests.dining', compact('activeOrders', 'historyOrders'));
+    }
+
+    public function diningRoomDetail($room)
+    {
+        $orders = \App\Models\HotelOrder::where('room_number', $room)
+            ->whereIn('status', ['Pending', 'Confirmed'])
+            ->orderBy('created_at', 'asc')
+            ->get();
+            
+        return view('admin.requests.dining-room', compact('orders', 'room'));
     }
 
     public function amenities()
     {
-        $requests = \App\Models\AmenityRequest::orderBy('created_at', 'desc')->get();
-        return view('admin.requests.amenities', compact('requests'));
+        $activeRequests = \App\Models\AmenityRequest::where('status', 'Pending')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->groupBy('room_number');
+
+        return view('admin.requests.amenities', compact('activeRequests'));
+    }
+
+    public function amenityRoomDetail($room)
+    {
+         $requests = \App\Models\AmenityRequest::where('room_number', $room)
+            ->where('status', 'Pending')
+            ->orderBy('created_at', 'asc')
+            ->get();
+            
+        return view('admin.requests.amenities-room', compact('requests', 'room'));
     }
 
     public function updateDiningStatus(\Illuminate\Http\Request $request, $id)
