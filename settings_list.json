@@ -1,0 +1,58 @@
+[
+    {
+        "id": 1,
+        "setting_key": "launcher_enabled",
+        "setting_value": "1",
+        "created_at": "2026-01-18T20:33:03.000000Z",
+        "updated_at": "2026-01-18T20:33:03.000000Z"
+    },
+    {
+        "id": 2,
+        "setting_key": "launcher_version",
+        "setting_value": "3.3.8",
+        "created_at": "2026-01-18T20:33:03.000000Z",
+        "updated_at": "2026-01-18T20:33:03.000000Z"
+    },
+    {
+        "id": 3,
+        "setting_key": "intro_video_url",
+        "setting_value": "uploads\/settings\/intro_video_url_1768768383.mp4",
+        "created_at": "2026-01-18T20:33:03.000000Z",
+        "updated_at": "2026-01-18T20:33:03.000000Z"
+    },
+    {
+        "id": 4,
+        "setting_key": "custom_greeting_image",
+        "setting_value": "uploads\/settings\/custom_greeting_image_1768768404.jpg",
+        "created_at": "2026-01-18T20:33:24.000000Z",
+        "updated_at": "2026-01-18T20:33:24.000000Z"
+    },
+    {
+        "id": 5,
+        "setting_key": "launcher_home_bg",
+        "setting_value": "uploads\/settings\/launcher_home_bg_1768768605.jpg",
+        "created_at": "2026-01-18T20:36:45.000000Z",
+        "updated_at": "2026-01-18T20:36:45.000000Z"
+    },
+    {
+        "id": 6,
+        "setting_key": "loading_logo_url",
+        "setting_value": "uploads\/settings\/loading_logo_url_1768768626.png",
+        "created_at": "2026-01-18T20:37:06.000000Z",
+        "updated_at": "2026-01-18T20:37:06.000000Z"
+    },
+    {
+        "id": 7,
+        "setting_key": "custom_greeting_title",
+        "setting_value": "WELCOME TO TAKE OFF HOTEL",
+        "created_at": "2026-01-18T20:40:26.000000Z",
+        "updated_at": "2026-01-18T20:40:26.000000Z"
+    },
+    {
+        "id": 8,
+        "setting_key": "custom_welcome_greeting",
+        "setting_value": "Selamat datang di Take Off Hotel. Terima kasih telah memilih hotel kami sebagai tempat menginap Anda. Kami berharap Anda merasa nyaman dan menikmati seluruh fasilitas yang tersedia selama menginap. Apabila membutuhkan bantuan atau informasi, silakan menghubungi staf hotel. Selamat beristirahat dan selamat menikmati layanan kami.",
+        "created_at": "2026-01-18T20:40:27.000000Z",
+        "updated_at": "2026-01-18T20:40:27.000000Z"
+    }
+]
