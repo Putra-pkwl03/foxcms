@@ -54,6 +54,13 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">APK Download URL</label>
+                        <input type="text" name="apk_url" class="form-control @error('apk_url') is-invalid @enderror" value="{{ old('apk_url') }}" placeholder="http://192.168.1.6:8000/apks/app.apk">
+                        <small class="text-muted">Link download APK jika aplikasi belum terpasang di STB.</small>
+                        @error('apk_url') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Icon Image</label>
                         <input type="file" name="icon" class="form-control @error('icon') is-invalid @enderror">
                         <small class="text-muted">Recommended: PNG / SVG with transparent background (512x512)</small>

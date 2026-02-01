@@ -17,5 +17,6 @@ class SystemApp extends Model
         'is_visible',
         'sort_order',
         'android_package',
+        'apk_url',
     ];
 }

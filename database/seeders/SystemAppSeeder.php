@@ -18,26 +18,26 @@ class SystemAppSeeder extends Seeder
         DB::table('system_apps')->truncate();
 
         $apps = [
-            [
-                'app_key' => 'dining',
-                'app_name' => 'Dining',
-                'app_name_en' => 'Dining',
-                'icon_path' => 'https://via.placeholder.com/150?text=Dining', // Android uses local icon
-                'is_visible' => true,
-                'sort_order' => 1,
-                'android_package' => null,
-                'created_at' => now(), 'updated_at' => now()
-            ],
-            [
-                'app_key' => 'amenities',
-                'app_name' => 'Amenities',
-                'app_name_en' => 'Amenities',
-                'icon_path' => 'https://via.placeholder.com/150?text=Amenities',
-                'is_visible' => true,
-                'sort_order' => 2,
-                'android_package' => null,
-                'created_at' => now(), 'updated_at' => now()
-            ],
+            // [
+            //     'app_key' => 'dining',
+            //     'app_name' => 'Dining',
+            //     'app_name_en' => 'Dining',
+            //     'icon_path' => 'https://via.placeholder.com/150?text=Dining', // Android uses local icon
+            //     'is_visible' => true,
+            //     'sort_order' => 1,
+            //     'android_package' => null,
+            //     'created_at' => now(), 'updated_at' => now()
+            // ],
+            // [
+            //     'app_key' => 'amenities',
+            //     'app_name' => 'Amenities',
+            //     'app_name_en' => 'Amenities',
+            //     'icon_path' => 'https://via.placeholder.com/150?text=Amenities',
+            //     'is_visible' => true,
+            //     'sort_order' => 2,
+            //     'android_package' => null,
+            //     'created_at' => now(), 'updated_at' => now()
+            // ],
             [
                 'app_key' => 'facilities',
                 'app_name' => 'Facilities',
@@ -58,16 +58,16 @@ class SystemAppSeeder extends Seeder
                 'android_package' => null,
                 'created_at' => now(), 'updated_at' => now()
             ],
-            [
-                'app_key' => 'apps',
-                'app_name' => 'Apps',
-                'app_name_en' => 'Apps',
-                'icon_path' => 'https://via.placeholder.com/150?text=Apps',
-                'is_visible' => true,
-                'sort_order' => 5,
-                'android_package' => null,
-                'created_at' => now(), 'updated_at' => now()
-            ],
+            // [
+            //     'app_key' => 'apps',
+            //     'app_name' => 'Apps',
+            //     'app_name_en' => 'Apps',
+            //     'icon_path' => 'https://via.placeholder.com/150?text=Apps',
+            //     'is_visible' => true,
+            //     'sort_order' => 5,
+            //     'android_package' => null,
+            //     'created_at' => now(), 'updated_at' => now()
+            // ],
             [
                 'app_key' => 'clear_cache',
                 'app_name' => 'Clean Cache',

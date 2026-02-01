@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ManagedDevice;
+use Illuminate\Support\Facades\Log;
 use App\Models\GlobalSetting;
 use App\Models\SystemMarquee;
 use App\Models\SystemApp;
@@ -15,75 +16,158 @@ class LauncherController extends Controller
      * Check if device is registered
      * GET /api/launcher?action=checkRegistration&device_id=TV-XXXXX
      */
+    // public function checkRegistration(Request $request)
+    // {
+    //     $deviceId = strtoupper(trim($request->input('device_id')));
+    //     $deviceName = $request->input('device_name');
+        
+    //     if (empty($deviceId)) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Device ID tidak ada'
+    //         ]);
+    //     }
+
+    //     $device = ManagedDevice::where('device_id', $deviceId)->first();
+
+    //     if (!$device) {
+    //         // Auto-discover: create new device record as inactive
+    //         $device = ManagedDevice::create([
+    //             'device_id' => $deviceId,
+    //             'device_name' => $deviceName ?: ('New STB (' . $request->ip() . ')'),
+    //             'room_number' => '-',
+    //             'is_active' => false,
+    //             'ip_address' => $request->ip(),
+    //             'status_online' => 'online',
+    //             'last_seen' => now()
+    //         ]);
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'is_registered' => false,
+    //             'registration_code' => $device->registration_code
+    //         ]);
+    //     }
+
+    //     // Update last seen & IP
+    //     $device->update([
+    //         'last_seen' => now(),
+    //         'ip_address' => $request->ip(),
+    //         'status_online' => 'online'
+    //     ]);
+        
+    //     // Refresh to get latest data from DB (especially for boolean casts)
+    //     $device->refresh();
+
+    //     // Check Global Launcher Status
+    //     $globalEnabled = GlobalSetting::where('setting_key', 'launcher_enabled')->first();
+    //     if ($globalEnabled && $globalEnabled->setting_value === '0') {
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'is_registered' => false,
+    //             'message' => 'Layanan Launcher sedang dimatikan oleh sistem.',
+    //             'registration_code' => 'OFFLINE'
+    //         ]);
+    //     }
+
+    //     // DEBUG: Log the actual value before returning
+    //     $isRegistered = (bool)$device->is_active;
+    //     \Log::info('CheckRegistration Response', [
+    //         'device_id' => $deviceId,
+    //         'is_active_raw' => $device->is_active,
+    //         'is_active_type' => gettype($device->is_active),
+    //         'is_registered' => $isRegistered
+    //     ]);
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'is_registered' => $isRegistered,
+    //         'registration_code' => $device->registration_code
+    //     ]);
+    // }
+
     public function checkRegistration(Request $request)
-    {
-        $deviceId = strtoupper(trim($request->input('device_id')));
-        $deviceName = $request->input('device_name');
-        
-        if (empty($deviceId)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Device ID tidak ada'
-            ]);
-        }
+{
+    // 1. Ambil Device ID dan Name
+    $deviceId = strtoupper(trim($request->input('device_id')));
+    $deviceName = $request->input('device_name');
+    
+    $realIp = $request->header('X-Forwarded-For') ?: $request->ip();
 
-        $device = ManagedDevice::where('device_id', $deviceId)->first();
+    if (str_contains($realIp, ',')) {
+        $realIp = trim(explode(',', $realIp)[0]);
+    }
 
-        if (!$device) {
-            // Auto-discover: create new device record as inactive
-            $device = ManagedDevice::create([
-                'device_id' => $deviceId,
-                'device_name' => $deviceName ?: ('New STB (' . $request->ip() . ')'),
-                'room_number' => '-',
-                'is_active' => false,
-                'ip_address' => $request->ip(),
-                'status_online' => 'online',
-                'last_seen' => now()
-            ]);
-
-            return response()->json([
-                'status' => 'success',
-                'is_registered' => false,
-                'registration_code' => $device->registration_code
-            ]);
-        }
-
-        // Update last seen & IP
-        $device->update([
-            'last_seen' => now(),
-            'ip_address' => $request->ip(),
-            'status_online' => 'online'
+    if (empty($deviceId)) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Device ID tidak ditemukan dalam request'
         ]);
-        
-        // Refresh to get latest data from DB (especially for boolean casts)
-        $device->refresh();
+    }
 
-        // Check Global Launcher Status
-        $globalEnabled = GlobalSetting::where('setting_key', 'launcher_enabled')->first();
-        if ($globalEnabled && $globalEnabled->setting_value === '0') {
-            return response()->json([
-                'status' => 'success',
-                'is_registered' => false,
-                'message' => 'Layanan Launcher sedang dimatikan oleh sistem.',
-                'registration_code' => 'OFFLINE'
-            ]);
-        }
+    // 3. Cari perangkat di database
+    $device = \App\Models\ManagedDevice::where('device_id', $deviceId)->first();
 
-        // DEBUG: Log the actual value before returning
-        $isRegistered = (bool)$device->is_active;
-        \Log::info('CheckRegistration Response', [
-            'device_id' => $deviceId,
-            'is_active_raw' => $device->is_active,
-            'is_active_type' => gettype($device->is_active),
-            'is_registered' => $isRegistered
+    if (!$device) {
+        $device = \App\Models\ManagedDevice::create([
+            'device_id'     => $deviceId,
+            'device_name'   => $deviceName ?: ('STB Baru (' . $realIp . ')'),
+            'room_number'   => '-',
+            'is_active'     => false,
+            'ip_address'    => $realIp, 
+            'status_online' => 'online',
+            'last_seen'     => now()
         ]);
 
         return response()->json([
-            'status' => 'success',
-            'is_registered' => $isRegistered,
-            'registration_code' => $device->registration_code
+            'status'            => 'success',
+            'is_registered'     => false,
+            'registration_code' => $device->registration_code,
+            'detected_ip'       => $realIp
         ]);
     }
+
+    // 4. Jika perangkat sudah ada, Update Last Seen & IP terbaru
+    $device->update([
+        'last_seen'     => now(),
+        'ip_address'    => $realIp, 
+        'status_online' => 'online'
+    ]);
+    
+    // Refresh data dari database
+    $device->refresh();
+
+    // 5. Cek Pengaturan Global (Kill Switch)
+    $globalEnabled = \App\Models\GlobalSetting::where('setting_key', 'launcher_enabled')->first();
+    if ($globalEnabled && $globalEnabled->setting_value === '0') {
+        return response()->json([
+            'status'            => 'success',
+            'is_registered'     => false,
+            'message'           => 'Layanan Launcher sedang dinonaktifkan oleh administrator.',
+            'registration_code' => 'OFFLINE'
+        ]);
+    }
+
+    // 6. Debugging Log (Bisa dicek di storage/logs/laravel.log)
+    $isRegistered = (bool)$device->is_active;
+    \Log::info('STB Check-in Success', [
+        'device_id'     => $deviceId,
+        'ip_address'    => $realIp,
+        'is_registered' => $isRegistered
+    ]);
+
+    // 7. Kembalikan Response ke APK STB
+    return response()->json([
+        'status'            => 'success',
+        'is_registered'     => $isRegistered,
+        'registration_code' => $device->registration_code,
+        'device_info'       => [
+            'name' => $device->device_name,
+            'room' => $device->room_number
+        ]
+    ]);
+}
+    
 
     /**
      * Get launcher status (enabled/disabled)
@@ -143,14 +227,48 @@ class LauncherController extends Controller
      * Get marquee text (running text)
      * GET /api/launcher?action=getMarqueeText
      */
+    // public function getMarqueeText()
+    // {
+    //     $marquee = SystemMarquee::where('is_active', true)->first();
+    //     $text = $marquee ? $marquee->content : null;
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'text' => $text
+    //     ]);
+    // }
+
+    /**
+ * Get marquee text (running text) with language support
+ * GET /api/launcher?action=getMarqueeText&lang=en
+ */
     public function getMarqueeText()
     {
-        $marquee = SystemMarquee::where('is_active', true)->first();
-        $text = $marquee ? $marquee->content : null;
+        $lang = request()->input('lang', 'id');
+        $suffix = ($lang === 'en') ? '_en' : '';
+
+        // Ambil status aktif/tidaknya running text dari model aslinya
+        $marqueeModel = SystemMarquee::where('is_active', true)->first();
+        
+        if (!$marqueeModel) {
+            return response()->json(['status' => 'success', 'text' => null]);
+        }
+
+        // Ambil konten teks berdasarkan bahasa dari GlobalSetting (seperti Greeting)
+        // Kita asumsikan key-nya: 'marquee_content' dan 'marquee_content_en'
+        $marqueeText = GlobalSetting::where('setting_key', 'marquee_content' . $suffix)->first();
+
+        // Fallback jika bahasa inggris kosong, ambil bahasa indonesia
+        if ($lang === 'en' && !$marqueeText) {
+            $marqueeText = GlobalSetting::where('setting_key', 'marquee_content')->first();
+        }
+
+        // Jika di GlobalSetting tidak ada, gunakan konten dari tabel SystemMarquee sebagai cadangan terakhir
+        $finalText = $marqueeText ? $marqueeText->setting_value : $marqueeModel->content;
 
         return response()->json([
             'status' => 'success',
-            'text' => $text
+            'text' => $finalText
         ]);
     }
 
@@ -240,7 +358,8 @@ class LauncherController extends Controller
                 'menu_name' => $lang == 'en' ? ($menu->menu_name_en ?: $menu->menu_name) : $menu->menu_name,
                 'icon_path' => $iconPath,
                 'action_type' => $menu->action_type,
-                'action_value' => $menu->action_value
+                'action_value' => $menu->action_value,
+                'apk_url' => $menu->apk_url
             ];
         });
 
@@ -268,21 +387,30 @@ class LauncherController extends Controller
         ]);
     }
 
-    /**
-     * Get custom greeting message
-     * GET /api/launcher?action=getCustomGreeting
+   /**
+     * Get custom greeting message with language support
+     * GET /api/launcher?action=getCustomGreeting&lang=en
      */
     public function getCustomGreeting()
     {
-        $title = GlobalSetting::where('setting_key', 'custom_greeting_title')->first();
-        $message = GlobalSetting::where('setting_key', 'custom_welcome_greeting')->first();
+        $lang = request()->input('lang', 'id');
+        $suffix = ($lang === 'en') ? '_en' : '';
+
+        $title = GlobalSetting::where('setting_key', 'custom_greeting_title' . $suffix)->first();
+        $message = GlobalSetting::where('setting_key', 'custom_welcome_greeting' . $suffix)->first();
+        
         $image = GlobalSetting::where('setting_key', 'custom_greeting_image')->first();
+
+        if ($lang === 'en' && (!$title || !$message)) {
+            $title = GlobalSetting::where('setting_key', 'custom_greeting_title')->first();
+            $message = GlobalSetting::where('setting_key', 'custom_welcome_greeting')->first();
+        }
 
         return response()->json([
             'status' => 'success',
             'data' => [
-                'title' => $title ? $title->setting_value : 'Welcome',
-                'content' => $message ? $message->setting_value : 'Welcome to our hotel!',
+                'title' => $title ? $title->setting_value : ($lang === 'en' ? 'Welcome' : 'Selamat Datang'),
+                'content' => $message ? $message->setting_value : ($lang === 'en' ? 'Welcome to our hotel!' : 'Selamat datang di hotel kami!'),
                 'image' => $image ? url($image->setting_value) : url('img/hotel3.png')
             ]
         ]);
@@ -399,6 +527,61 @@ class LauncherController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
+
+/**
+ * Clear Cache & Data remotely via ADB when requested by STB
+ * GET /api/v1/remote-clear
+ */
+// public function clearDeviceData(Request $request) 
+// {
+//     try {
+//         // Ambil Device ID dari request (STB harus mengirimkan ID-nya)
+//         $deviceId = $request->input('device_id'); 
+        
+//         // Cari perangkat di database berdasarkan device_id
+//         $device = \App\Models\ManagedDevice::where('device_id', $deviceId)->first();
+
+//         if (!$device || !$device->ip_address) {
+//     // Gunakan header dari Nginx jika tersedia
+//             $ip = $request->header('X-Forwarded-For') ?: $request->ip();
+//             \Log::warning("ClearData: Device ID tidak ditemukan, menggunakan IP deteksi: $ip");
+//         } else {
+//             $ip = $device->ip_address;
+//         }
+
+//         $adb = "/usr/lib/android-sdk/platform-tools/adb";
+
+//         // 1. Koneksi dengan IP asli dari Database (172.16.16.104)
+//         exec("timeout 5 $adb connect $ip:5555 2>&1");
+        
+//         $packages = [
+//             'com.android.chrome',
+//             'com.google.android.youtube.tv',
+//             'com.takeoff.launcher'
+//         ];
+            
+//         $results = [];
+//         foreach ($packages as $pkg) {
+//             exec("timeout 3 $adb -s $ip:5555 shell am force-stop $pkg 2>&1");
+//             exec("timeout 5 $adb -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
+//             $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed';
+//             exec("timeout 3 $adb -s $ip:5555 shell pm enable $pkg 2>&1");
+//         }
+
+//         // Jalankan kembali launcher
+//         exec("timeout 5 $adb -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
+
+//         return response()->json([
+//             'status' => 'success',
+//             'target_ip' => $ip,
+//             'results' => $results
+//         ]);
+
+//     } catch (\Throwable $e) {
+//         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+//     }
+// }
+
 
     /**
      * Get dining menus

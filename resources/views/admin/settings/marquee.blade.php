@@ -20,8 +20,12 @@
                     </div>
 
                     <div class="mb-4">
-                        <x-larastrap::textarea name="content" label="Running Text Message" rows="3" required placeholder="Enter the announcement text here...">{{ $marquee?->content }}</x-larastrap::textarea>
-                        <small class="text-muted text-xs">This message will scroll horizontally at the bottom of the TV screen.</small>
+                        <x-larastrap::textarea name="content" label="Running Text (ID)" rows="2" required placeholder="Masukkan pengumuman dalam Bahasa Indonesia...">{{ $marquee?->content }}</x-larastrap::textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <x-larastrap::textarea name="content_en" label="Running Text (EN)" rows="2" placeholder="Enter announcement in English...">{{ $content_en }}</x-larastrap::textarea>
+                        <small class="text-muted text-xs">If left empty, the TV will fallback to the Indonesian version.</small>
                     </div>
                     
                     <div class="mb-4 p-3 bg-light rounded-3 d-flex align-items-center justify-content-between">
@@ -45,14 +49,22 @@
         
         <div class="premium-card mt-4 bg-dark text-white p-0 border-0 shadow-lg">
             <div class="card-header border-bottom border-secondary border-opacity-25 py-3">
-                <div class="d-flex align-items-center">
-                    <div class="dot bg-danger me-2" style="width: 10px; height: 10px; border-radius: 50%;"></div>
-                    <h5 class="card-title mb-0 text-white-50">TV Screen Preview</h5>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="dot bg-danger me-2" style="width: 10px; height: 10px; border-radius: 50%;"></div>
+                        <h5 class="card-title mb-0 text-white-50">TV Screen Preview</h5>
+                    </div>
+                    <span class="badge bg-secondary text-xs">Live Preview (ID)</span>
                 </div>
             </div>
-            <div class="card-body p-0 position-relative" style="height: 120px; background: url('https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=1000') center/cover;">
+            <div class="card-body p-0 position-relative" style="height: 150px; background: url('https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&q=80&w=1000') center/cover;">
                 <div class="position-absolute bottom-0 w-100 bg-primary bg-opacity-75 py-2 text-white overflow-hidden shadow-lg border-top border-white border-opacity-25" style="backdrop-filter: blur(8px);">
-                    <marquee scrollamount="8" class="fw-bold">{{ $marquee?->content ?: 'Running text announcement will scroll here once configured...' }}</marquee>
+                    <marquee scrollamount="8" class="fw-bold">
+                        {{ $marquee?->content ?: 'Running text announcement will scroll here...' }} 
+                        @if($content_en) 
+                            <span class="mx-5">|</span> {{ $content_en }} 
+                        @endif
+                    </marquee>
                 </div>
             </div>
         </div>

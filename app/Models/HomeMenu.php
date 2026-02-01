@@ -16,6 +16,7 @@ class HomeMenu extends Model
         'icon_path',
         'action_type',
         'action_value',
+        'apk_url',
         'sort_order',
         'is_active',
     ];

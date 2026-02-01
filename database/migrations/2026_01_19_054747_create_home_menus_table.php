@@ -17,7 +17,7 @@ return new class extends Migration
             $blueprint->string('menu_name');
             $blueprint->string('menu_name_en')->nullable();
             $blueprint->string('icon_path')->nullable();
-            $blueprint->string('action_type')->default('dialog'); // function, dialog, app
+            $blueprint->string('action_type')->default('dialog'); 
             $blueprint->string('action_value')->nullable();
             $blueprint->integer('sort_order')->default(0);
             $blueprint->boolean('is_active')->default(true);

@@ -9,6 +9,15 @@
             <div class="card-header bg-white">
                 <h5 class="card-title mb-0">New App Configuration</h5>
             </div>
+            @if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
             <div class="card-body">
                 <form action="{{ route('admin.system-apps.store') }}" method="POST">
                     @csrf
@@ -29,6 +38,11 @@
                     <div class="mb-3">
                         <x-larastrap::text name="android_package" label="Android Package Name" placeholder="e.g. com.netflix.ninja" />
                         <small class="text-muted">Required if this is an external Android app.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <x-larastrap::text name="apk_url" label="APK Download URL" placeholder="https://example.com/netflix.apk" />
+                        <small class="text-muted">Direct link to download the APK if the app is not installed on STB.</small>
                     </div>
 
                     <div class="mb-3">

@@ -55,29 +55,42 @@
                         <i class="bi bi-chat-heart-fill"></i>
                         <h6>Custom Greeting Screen</h6>
                     </div>
-                    
+
                     <div class="mb-4">
-                    <div class="row">
-                        <div class="col-md-12 mb-4">
-                            <x-larastrap::text name="custom_greeting_title" label="Greeting Title" :value="$settings['custom_greeting_title'] ?? ''" placeholder="e.g. Welcome to Our Hotel" />
-                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-4 border-end">
+                                <h6 class="text-primary mb-3"><span class="flag-icon flag-icon-id"></span> Bahasa Indonesia</h6>
+                                <div class="mb-3">
+                                    <x-larastrap::text name="custom_greeting_title" label="Greeting Title (ID)" :value="$settings['custom_greeting_title'] ?? ''" placeholder="Contoh: Selamat Datang" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Welcome Message (ID)</label>
+                                    <textarea name="custom_welcome_greeting" class="form-control" rows="3" placeholder="Contoh: Silakan pilih bahasa untuk melanjutkan">{{ $settings['custom_welcome_greeting'] ?? '' }}</textarea>
+                                </div>
+                            </div>
 
-                        <div class="col-md-12 mb-4">
-                            <label class="form-label">Welcome Message</label>
-                            <textarea name="custom_welcome_greeting" class="form-control" rows="3" placeholder="Enter the main message shown on the home screen">{{ $settings['custom_welcome_greeting'] ?? '' }}</textarea>
-                        </div>
+                            <div class="col-md-6 mb-4">
+                                <h6 class="text-primary mb-3"><span class="flag-icon flag-icon-us"></span> English Version</h6>
+                                <div class="mb-3">
+                                    <x-larastrap::text name="custom_greeting_title_en" label="Greeting Title (EN)" :value="$settings['custom_greeting_title_en'] ?? ''" placeholder="e.g. Welcome to Our Hotel" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Welcome Message (EN)</label>
+                                    <textarea name="custom_welcome_greeting_en" class="form-control" rows="3" placeholder="e.g. Please select your language to continue">{{ $settings['custom_welcome_greeting_en'] ?? '' }}</textarea>
+                                </div>
+                            </div>
 
-                        <div class="col-md-12 mb-4">
-                            <label class="form-label">Greeting Background Image</label>
-                            <input type="file" name="custom_greeting_image" class="form-control">
-                            <div class="mt-2 small">
-                                <span class="badge bg-light text-muted border">Current File:</span>
-                                <code class="ms-1">{{ $settings['custom_greeting_image'] ?? 'Default' }}</code>
+                            <div class="col-md-12 mb-4">
+                                <label class="form-label font-weight-bold">Greeting Background Image</label>
+                                <input type="file" name="custom_greeting_image" class="form-control">
+                                <div class="mt-2 small">
+                                    <span class="badge bg-light text-muted border">Current File:</span>
+                                    <code class="ms-1">{{ $settings['custom_greeting_image'] ?? 'Default' }}</code>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    </div>
-
+                    
                     <div class="section-header">
                         <i class="bi bi-palette-fill"></i>
                         <h6>Branding & UI Assets</h6>

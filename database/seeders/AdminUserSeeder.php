@@ -27,7 +27,7 @@ class AdminUserSeeder extends Seeder
             User::create([
                 'name' => 'admin',
                 'email' => 'admin@ahf.com', // Internal email
-                'password' => Hash::make('password'),
+                'password' => Hash::make('passwordfoxadminv2'),
             ]);
             $this->command->info('Admin user created. Username: admin, Password: password');
         } else {

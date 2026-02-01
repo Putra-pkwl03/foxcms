@@ -26,6 +26,7 @@ class HomeMenuController extends Controller
             'menu_key' => 'required|unique:home_menus',
             'menu_name' => 'required',
             'action_type' => 'required',
+            'apk_url' => 'nullable|string',
             'icon' => 'nullable|image|max:2048',
         ]);
 
@@ -55,6 +56,7 @@ class HomeMenuController extends Controller
             'menu_key' => 'required|unique:home_menus,menu_key,' . $id,
             'menu_name' => 'required',
             'action_type' => 'required',
+            'apk_url' => 'nullable|string',
             'icon' => 'nullable|image|max:2048',
         ]);
 

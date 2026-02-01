@@ -7,24 +7,42 @@ use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
+   
+
     public function marquee()
     {
         $marquee = \App\Models\SystemMarquee::first();
-        return view('admin.settings.marquee', compact('marquee'));
+        
+        // Ambil nilai EN dari GlobalSetting
+        $content_en = \App\Models\GlobalSetting::where('setting_key', 'marquee_content_en')->value('setting_value');
+        
+        return view('admin.settings.marquee', compact('marquee', 'content_en'));
     }
 
-    public function updateMarquee(\Illuminate\Http\Request $request)
+    public function updateMarquee(Request $request)
     {
         $request->validate([
             'content' => 'required|string',
+            'content_en' => 'nullable|string',
         ]);
 
+        // 1. Tetap update tabel SystemMarquee untuk status Aktif/Tidak
         \App\Models\SystemMarquee::updateOrCreate(
             ['id' => 1],
             [
                 'content' => $request->content,
                 'is_active' => $request->has('is_active'),
             ]
+        );
+
+        \App\Models\GlobalSetting::updateOrCreate(
+            ['setting_key' => 'marquee_content'],
+            ['setting_value' => $request->content]
+        );
+
+        \App\Models\GlobalSetting::updateOrCreate(
+            ['setting_key' => 'marquee_content_en'],
+            ['setting_value' => $request->content_en]
         );
 
         return redirect()->back()->with('success', 'Running text updated successfully.');

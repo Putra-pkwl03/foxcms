@@ -29,6 +29,11 @@
                     <div class="mb-3">
                         <x-larastrap::text name="android_package" label="Android Package Name" :value="$app->android_package" />
                     </div>
+                    
+                    <div class="mb-3">
+                        <x-larastrap::text name="apk_url" label="APK Download URL" :value="$app->apk_url" placeholder="https://example.com/netflix.apk" />
+                        <small class="text-muted">Direct link to download the APK if the app is not installed on STB.</small>
+                    </div>
 
                     <div class="mb-3">
                         <x-larastrap::text name="icon_path" label="Icon URL or Path" :value="$app->icon_path" required />

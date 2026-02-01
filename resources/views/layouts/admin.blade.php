@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>AHF Admin</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/img/favicon.ico') }}" type="image/x-icon">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -262,26 +264,26 @@
         <a href="{{ route('admin.home-menus.index') }}" class="{{ request()->routeIs('admin.home-menus.*') ? 'active' : '' }}">
             <i class="bi bi-grid-fill"></i> Home Menus
         </a>
-        <a href="{{ route('admin.dining-menu.index') }}" class="{{ request()->routeIs('admin.dining-menu.*') ? 'active' : '' }}">
+        {{-- <a href="{{ route('admin.dining-menu.index') }}" class="{{ request()->routeIs('admin.dining-menu.*') ? 'active' : '' }}">
             <i class="bi bi-cup-hot-fill"></i> Dining Menu
-        </a>
+        </a> --}}
         <a href="{{ route('admin.facilities.index') }}" class="{{ request()->routeIs('admin.facilities.*') ? 'active' : '' }}">
             <i class="bi bi-building-fill"></i> Facilities
         </a>
-        <a href="{{ route('admin.amenities.index') }}" class="{{ request()->routeIs('admin.amenities.*') ? 'active' : '' }}">
+        {{-- <a href="{{ route('admin.amenities.index') }}" class="{{ request()->routeIs('admin.amenities.*') ? 'active' : '' }}">
             <i class="bi bi-box-fill"></i> Amenities
-        </a>
+        </a> --}}
         <a href="{{ route('admin.system-apps.index') }}" class="{{ request()->routeIs('admin.system-apps.*') ? 'active' : '' }}">
             <i class="bi bi-app-indicator"></i> System Apps
         </a>
 
-        <div class="sidebar-heading mt-4">Requests</div>
-        <a href="{{ route('admin.requests.dining') }}" class="{{ request()->routeIs('admin.requests.dining') ? 'active' : '' }}">
+        {{-- <div class="sidebar-heading mt-4">Requests</div> --}}
+        {{-- <a href="{{ route('admin.requests.dining') }}" class="{{ request()->routeIs('admin.requests.dining') ? 'active' : '' }}">
             <i class="bi bi-bag-check-fill"></i> Dining Orders
         </a>
         <a href="{{ route('admin.requests.amenities') }}" class="{{ request()->routeIs('admin.requests.amenities') ? 'active' : '' }}">
             <i class="bi bi-hand-thumbs-up-fill"></i> Amenity Requests
-        </a>
+        </a> --}}
 
         <div class="sidebar-heading mt-4">System</div>
         <a href="{{ route('admin.settings.global') }}" class="{{ request()->routeIs('admin.settings.global') ? 'active' : '' }}">

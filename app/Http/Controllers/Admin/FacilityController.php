@@ -27,20 +27,23 @@ class FacilityController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(\Illuminate\Http\Request $request)
+    public function store(Request $request)
     {
+        $request->merge([
+            'is_active' => $request->has('is_active'),
+            'show_description' => $request->has('show_description'),
+        ]);
+
+        // 2. Validasi
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'description_en' => 'nullable|string',
-            'is_active' => 'boolean',
+            'is_active' => 'boolean', 
             'show_description' => 'boolean',
             'image' => 'nullable|image|max:2048',
         ]);
-
-        $validated['is_active'] = $request->has('is_active');
-        $validated['show_description'] = $request->has('show_description');
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('facilities', 'public');
@@ -66,6 +69,11 @@ class FacilityController extends Controller
      */
     public function update(\Illuminate\Http\Request $request, string $id)
     {
+        $request->merge([
+            'is_active' => $request->has('is_active'),
+            'show_description' => $request->has('show_description'),
+        ]);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'name_en' => 'nullable|string|max:255',
@@ -76,15 +84,12 @@ class FacilityController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
-        $validated['show_description'] = $request->has('show_description');
-
         $facility = \App\Models\HotelFacility::findOrFail($id);
 
         if ($request->hasFile('image')) {
-            // Delete old image
-            if ($facility->icon_path && file_exists(public_path($facility->icon_path))) {
-                @unlink(public_path($facility->icon_path));
+            if ($facility->icon_path) {
+               $oldPath = str_replace('storage/', '', $facility->icon_path);
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($oldPath);
             }
 
             $path = $request->file('image')->store('facilities', 'public');
@@ -93,7 +98,8 @@ class FacilityController extends Controller
 
         $facility->update($validated);
 
-        return redirect()->route('admin.facilities.index')->with('success', 'Facility updated successfully.');
+        return redirect()->route('admin.facilities.index')
+            ->with('success', 'Facility updated successfully.');
     }
 
     /**
