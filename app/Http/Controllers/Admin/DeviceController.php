@@ -114,159 +114,159 @@ class DeviceController extends Controller
     /**
      * Execute ADB tool command.
      */
-    public function executeToolCommand(Request $request, string $id)
-    {
-        $device = \App\Models\ManagedDevice::findOrFail($id);
-        $command = $request->input('command');
-        $ip = $device->ip_address;
+    // public function executeToolCommand(Request $request, string $id)
+    // {
+    //     $device = \App\Models\ManagedDevice::findOrFail($id);
+    //     $command = $request->input('command');
+    //     $ip = $device->ip_address;
 
-        if (!$ip) {
-            return response()->json(['status' => 'error', 'message' => 'IP Address not found. Connect device first.']);
-        }
+    //     if (!$ip) {
+    //         return response()->json(['status' => 'error', 'message' => 'IP Address not found. Connect device first.']);
+    //     }
 
-        // ADB Path - Using local binary in storage/adb
-        $adbPath = storage_path('adb/adb.exe'); 
+    //     // ADB Path - Using local binary in storage/adb
+    //     $adbPath = storage_path('adb/adb.exe'); 
         
-        // Check if device is connected, if not try to connect
-        exec("\"$adbPath\" connect $ip:5555 2>&1", $connectOutput);
+    //     // Check if device is connected, if not try to connect
+    //     exec("\"$adbPath\" connect $ip:5555 2>&1", $connectOutput);
         
-        $result = "";
-        $success = true;
+    //     $result = "";
+    //     $success = true;
 
-        try {
-            switch($command) {
-                case 'reboot':
-                    exec("\"$adbPath\" -s $ip:5555 reboot 2>&1", $out);
-                    $result = "Device is rebooting...";
-                    break;
-                case 'clear_cache':
-                    // Need SystemApp model to get packages
-                    $packages = \App\Models\SystemApp::whereNotNull('android_package')->pluck('android_package')->toArray();
-                    if (empty($packages)) {
-                        $packages = ['com.android.chrome', 'com.google.android.youtube']; // Fallback
-                    }
-                    foreach ($packages as $pkg) {
-                        exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1");
-                    }
-                    $result = "Guest data & cache cleared for all apps.";
-                    break;
-                case 'home':
-                    exec("\"$adbPath\" -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
-                    $result = "Device returned to Home Screen.";
-                    break;
-                case 'set_owner':
-                    exec("\"$adbPath\" -s $ip:5555 shell dpm set-device-owner com.takeoff.launcher/.MyDeviceAdminReceiver 2>&1", $out);
-                    $result = "Set Device Owner command sent. Check device screen.";
-                    break;
-                case 'set_default_launcher':
-                    exec("\"$adbPath\" -s $ip:5555 shell pm disable-user com.google.android.tvlauncher 2>&1");
-                    exec("\"$adbPath\" -s $ip:5555 shell cmd package set-home-activity com.takeoff.launcher/.MainActivity 2>&1");
-                    $result = "TakeOff Launcher set as default system home.";
-                    break;
-                case 'logs':
-                    exec("\"$adbPath\" -s $ip:5555 logcat -d *:W 2>&1", $logOutput);
-                    $slicedLogs = array_slice($logOutput, -100);
-                    $logsStr = implode("\n", $slicedLogs);
-                    return response()->json([
-                        'status' => 'success',
-                        'message' => 'Logs fetched successfully',
-                        'data' => $logsStr ?: "No logs found or device is offline."
-                    ]);
-                default:
-                    $success = false;
-                    $result = "Unknown command.";
-            }
-        } catch (\Exception $e) {
-            $success = false;
-            $result = "Error: " . $e->getMessage();
-        }
+    //     try {
+    //         switch($command) {
+    //             case 'reboot':
+    //                 exec("\"$adbPath\" -s $ip:5555 reboot 2>&1", $out);
+    //                 $result = "Device is rebooting...";
+    //                 break;
+    //             case 'clear_cache':
+    //                 // Need SystemApp model to get packages
+    //                 $packages = \App\Models\SystemApp::whereNotNull('android_package')->pluck('android_package')->toArray();
+    //                 if (empty($packages)) {
+    //                     $packages = ['com.android.chrome', 'com.google.android.youtube']; // Fallback
+    //                 }
+    //                 foreach ($packages as $pkg) {
+    //                     exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1");
+    //                 }
+    //                 $result = "Guest data & cache cleared for all apps.";
+    //                 break;
+    //             case 'home':
+    //                 exec("\"$adbPath\" -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
+    //                 $result = "Device returned to Home Screen.";
+    //                 break;
+    //             case 'set_owner':
+    //                 exec("\"$adbPath\" -s $ip:5555 shell dpm set-device-owner com.takeoff.launcher/.MyDeviceAdminReceiver 2>&1", $out);
+    //                 $result = "Set Device Owner command sent. Check device screen.";
+    //                 break;
+    //             case 'set_default_launcher':
+    //                 exec("\"$adbPath\" -s $ip:5555 shell pm disable-user com.google.android.tvlauncher 2>&1");
+    //                 exec("\"$adbPath\" -s $ip:5555 shell cmd package set-home-activity com.takeoff.launcher/.MainActivity 2>&1");
+    //                 $result = "TakeOff Launcher set as default system home.";
+    //                 break;
+    //             case 'logs':
+    //                 exec("\"$adbPath\" -s $ip:5555 logcat -d *:W 2>&1", $logOutput);
+    //                 $slicedLogs = array_slice($logOutput, -100);
+    //                 $logsStr = implode("\n", $slicedLogs);
+    //                 return response()->json([
+    //                     'status' => 'success',
+    //                     'message' => 'Logs fetched successfully',
+    //                     'data' => $logsStr ?: "No logs found or device is offline."
+    //                 ]);
+    //             default:
+    //                 $success = false;
+    //                 $result = "Unknown command.";
+    //         }
+    //     } catch (\Exception $e) {
+    //         $success = false;
+    //         $result = "Error: " . $e->getMessage();
+    //     }
 
-        return response()->json([
-            'status' => $success ? 'success' : 'error',
-            'message' => $result
-        ]);
+    //     return response()->json([
+    //         'status' => $success ? 'success' : 'error',
+    //         'message' => $result
+    //     ]);
+    // }
+
+
+public function executeToolCommand(Request $request, string $id)
+{
+    $device = \App\Models\ManagedDevice::findOrFail($id);
+    $command = $request->input('command');
+    $ip = $device->ip_address;
+
+    if (!$ip) {
+        return response()->json(['status' => 'error', 'message' => 'IP Address tidak ditemukan.']);
     }
 
-
-// public function executeToolCommand(Request $request, string $id)
-// {
-//     $device = \App\Models\ManagedDevice::findOrFail($id);
-//     $command = $request->input('command');
-//     $ip = $device->ip_address;
-
-//     if (!$ip) {
-//         return response()->json(['status' => 'error', 'message' => 'IP Address tidak ditemukan.']);
-//     }
-
-//     // FIX: Gunakan path lengkap adb di Ubuntu Docker agar user www-data mengenalinya
-//     $adb = "/usr/lib/android-sdk/platform-tools/adb";
+    // FIX: Gunakan path lengkap adb di Ubuntu Docker agar user www-data mengenalinya
+        $adb = "/usr/bin/adb";
     
-//     // Pastikan terkoneksi sebelum eksekusi perintah
-//     exec("timeout 5 $adb connect $ip:5555 2>&1");
+    // Pastikan terkoneksi sebelum eksekusi perintah
+    exec("timeout 5 $adb connect $ip:5555 2>&1");
     
-//     $result = "";
-//     $success = true;
+    $result = "";
+    $success = true;
 
-//     try {
-//         switch($command) {
-//             case 'reboot':
-//                 exec("timeout 5 $adb -s $ip:5555 reboot 2>&1");
-//                 $result = "Device sedang reboot...";
-//                 break;
+    try {
+        switch($command) {
+            case 'reboot':
+                exec("timeout 5 $adb -s $ip:5555 reboot 2>&1");
+                $result = "Device sedang reboot...";
+                break;
 
-//             case 'clear_cache':
-//                 $packages = \App\Models\SystemApp::whereNotNull('android_package')->pluck('android_package')->toArray();
-//                 if (empty($packages)) {
-//                     $packages = ['com.takeoff.launcher']; 
-//                 }
-//                 foreach ($packages as $pkg) {
-//                     exec("timeout 5 $adb -s $ip:5555 shell am force-stop $pkg 2>&1");
-//                     exec("timeout 5 $adb -s $ip:5555 shell pm clear $pkg 2>&1");
-//                     exec("timeout 5 $adb -s $ip:5555 shell pm enable $pkg 2>&1");
-//                 }
-//                 $result = "Data tamu & cache berhasil dibersihkan.";
-//                 break;
+            case 'clear_cache':
+                $packages = \App\Models\SystemApp::whereNotNull('android_package')->pluck('android_package')->toArray();
+                if (empty($packages)) {
+                    $packages = ['com.takeoff.launcher']; 
+                }
+                foreach ($packages as $pkg) {
+                    exec("timeout 5 $adb -s $ip:5555 shell am force-stop $pkg 2>&1");
+                    exec("timeout 5 $adb -s $ip:5555 shell pm clear $pkg 2>&1");
+                    exec("timeout 5 $adb -s $ip:5555 shell pm enable $pkg 2>&1");
+                }
+                $result = "Data tamu & cache berhasil dibersihkan.";
+                break;
 
-//             case 'home':
-//                 // Mengembalikan fungsi Home dari versi Windows
-//                 exec("timeout 5 $adb -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
-//                 $result = "Device kembali ke layar utama.";
-//                 break;
+            case 'home':
+                // Mengembalikan fungsi Home dari versi Windows
+                exec("timeout 5 $adb -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
+                $result = "Device kembali ke layar utama.";
+                break;
 
-//             case 'set_owner':
-//                 // Mengembalikan fungsi Device Owner dari versi Windows
-//                 exec("timeout 5 $adb -s $ip:5555 shell dpm set-device-owner com.takeoff.launcher/.MyDeviceAdminReceiver 2>&1");
-//                 $result = "Perintah Set Device Owner dikirim. Cek layar STB.";
-//                 break;
+            case 'set_owner':
+                // Mengembalikan fungsi Device Owner dari versi Windows
+                exec("timeout 5 $adb -s $ip:5555 shell dpm set-device-owner com.takeoff.launcher/.MyDeviceAdminReceiver 2>&1");
+                $result = "Perintah Set Device Owner dikirim. Cek layar STB.";
+                break;
 
-//             case 'set_default_launcher':
-//                 // Mengembalikan fungsi Default Launcher dari versi Windows
-//                 exec("timeout 5 $adb -s $ip:5555 shell pm disable-user com.google.android.tvlauncher 2>&1");
-//                 exec("timeout 5 $adb -s $ip:5555 shell cmd package set-home-activity com.takeoff.launcher/.MainActivity 2>&1");
-//                 $result = "TakeOff Launcher diset sebagai default.";
-//                 break;
+            case 'set_default_launcher':
+                // Mengembalikan fungsi Default Launcher dari versi Windows
+                exec("timeout 5 $adb -s $ip:5555 shell pm disable-user com.google.android.tvlauncher 2>&1");
+                exec("timeout 5 $adb -s $ip:5555 shell cmd package set-home-activity com.takeoff.launcher/.MainActivity 2>&1");
+                $result = "TakeOff Launcher diset sebagai default.";
+                break;
 
-//             case 'logs':
-//                 exec("timeout 10 $adb -s $ip:5555 logcat -d -t 100 *:W 2>&1", $logOutput);
-//                 $logsStr = implode("\n", $logOutput);
-//                 return response()->json([
-//                     'status' => 'success',
-//                     'message' => 'Logs fetched successfully',
-//                     'data' => $logsStr ?: "Tidak ada log atau device offline."
-//                 ]);
+            case 'logs':
+                exec("timeout 10 $adb -s $ip:5555 logcat -d -t 100 *:W 2>&1", $logOutput);
+                $logsStr = implode("\n", $logOutput);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Logs fetched successfully',
+                    'data' => $logsStr ?: "Tidak ada log atau device offline."
+                ]);
 
-//             default:
-//                 $success = false;
-//                 $result = "Perintah ($command) tidak dikenal.";
-//         }
-//     } catch (\Exception $e) {
-//         $success = false;
-//         $result = "Error: " . $e->getMessage();
-//     }
+            default:
+                $success = false;
+                $result = "Perintah ($command) tidak dikenal.";
+        }
+    } catch (\Exception $e) {
+        $success = false;
+        $result = "Error: " . $e->getMessage();
+    }
 
-//     return response()->json([
-//         'status' => $success ? 'success' : 'error',
-//         'message' => $result
-//     ]);
-// }
+    return response()->json([
+        'status' => $success ? 'success' : 'error',
+        'message' => $result
+    ]);
+}
 }

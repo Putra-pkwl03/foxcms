@@ -484,103 +484,100 @@ class LauncherController extends Controller
      * Clear Cache & Data remotely via ADB when requested by STB
      * GET /api/v1/remote-clear
      */
-    public function clearDeviceData(Request $request) 
-    {
-        try {
-            $ip = $request->ip();
+    // public function clearDeviceData(Request $request) 
+    // {
+    //     try {
+    //         $ip = $request->ip();
             
-            // ADB Path
-            $adbPath = storage_path('adb/adb.exe');
-            if (!file_exists($adbPath)) {
-                return response()->json(['status' => 'error', 'message' => 'ADB tools not found on server'], 500);
-            }
+    //         // ADB Path
+    //         $adbPath = storage_path('adb/adb.exe');
+    //         if (!file_exists($adbPath)) {
+    //             return response()->json(['status' => 'error', 'message' => 'ADB tools not found on server'], 500);
+    //         }
 
-            // Connect to device
-            exec("\"$adbPath\" connect $ip:5555 2>&1");
+    //         // Connect to device
+    //         exec("\"$adbPath\" connect $ip:5555 2>&1");
             
-            // List of packages to clear
-            // In a real scenario, fetch this from SystemApp model where android_package is not null
-            // For now, use the same default list as AHF-APP + browsers
-            $packages = [
-                'com.android.chrome',
-                'com.google.android.webview', 
-                'org.mozilla.firefox',
-                'com.opera.browser',
-                'com.google.android.youtube',
-                'com.google.android.youtube.tv'
-            ];
+    //         // List of packages to clear
+    //         // In a real scenario, fetch this from SystemApp model where android_package is not null
+    //         // For now, use the same default list as AHF-APP + browsers
+    //         $packages = [
+    //             'com.android.chrome',
+    //             'com.google.android.webview', 
+    //             'org.mozilla.firefox',
+    //             'com.opera.browser',
+    //             'com.google.android.youtube',
+    //             'com.google.android.youtube.tv'
+    //         ];
             
-            $results = [];
-            foreach ($packages as $pkg) {
-                exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
-                $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed/Not Found';
-            }
+    //         $results = [];
+    //         foreach ($packages as $pkg) {
+    //             exec("\"$adbPath\" -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
+    //             $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed/Not Found';
+    //         }
 
-            return response()->json([
-                'status' => 'success',
-                'target_ip' => $ip,
-                'message' => 'Cache clearing commands executed',
-                'results' => $results
-            ]);
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'target_ip' => $ip,
+    //             'message' => 'Cache clearing commands executed',
+    //             'results' => $results
+    //         ]);
 
-        } catch (\Throwable $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-        }
-    }
+    //     } catch (\Throwable $e) {
+    //         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    //     }
+    // }
 
 /**
  * Clear Cache & Data remotely via ADB when requested by STB
  * GET /api/v1/remote-clear
  */
-// public function clearDeviceData(Request $request) 
-// {
-//     try {
-//         // Ambil Device ID dari request (STB harus mengirimkan ID-nya)
-//         $deviceId = $request->input('device_id'); 
+public function clearDeviceData(Request $request) 
+{
+    try {
+        $deviceId = $request->input('device_id'); 
         
-//         // Cari perangkat di database berdasarkan device_id
-//         $device = \App\Models\ManagedDevice::where('device_id', $deviceId)->first();
+        // Cari di database
+        $device = \App\Models\ManagedDevice::where('device_id', $deviceId)->first();
 
-//         if (!$device || !$device->ip_address) {
-//     // Gunakan header dari Nginx jika tersedia
-//             $ip = $request->header('X-Forwarded-For') ?: $request->ip();
-//             \Log::warning("ClearData: Device ID tidak ditemukan, menggunakan IP deteksi: $ip");
-//         } else {
-//             $ip = $device->ip_address;
-//         }
+        // Gunakan IP dari database, kalau tidak ada pakai IP pengirim (X-Forwarded-For untuk Nginx)
+        $ip = ($device && $device->ip_address) ? $device->ip_address : ($request->header('X-Forwarded-For') ?: $request->ip());
 
-//         $adb = "/usr/lib/android-sdk/platform-tools/adb";
+        // PATH ADB di Photon OS kita tadi
+        $adb = "/usr/bin/adb";
 
-//         // 1. Koneksi dengan IP asli dari Database (172.16.16.104)
-//         exec("timeout 5 $adb connect $ip:5555 2>&1");
+        // 1. Koneksi ke STB (via Tailscale IP)
+        exec("timeout 5 $adb connect $ip:5555 2>&1");
         
-//         $packages = [
-//             'com.android.chrome',
-//             'com.google.android.youtube.tv',
-//             'com.takeoff.launcher'
-//         ];
+        $packages = [
+            'com.android.chrome',
+            'com.google.android.youtube.tv',
+            'com.takeoff.launcher'
+        ];
             
-//         $results = [];
-//         foreach ($packages as $pkg) {
-//             exec("timeout 3 $adb -s $ip:5555 shell am force-stop $pkg 2>&1");
-//             exec("timeout 5 $adb -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
-//             $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed';
-//             exec("timeout 3 $adb -s $ip:5555 shell pm enable $pkg 2>&1");
-//         }
+        $results = [];
+        foreach ($packages as $pkg) {
+            // Stop aplikasinya dulu
+            exec("timeout 3 $adb -s $ip:5555 shell am force-stop $pkg 2>&1");
+            // Hapus data/cache
+            exec("timeout 5 $adb -s $ip:5555 shell pm clear $pkg 2>&1", $output, $returnVar);
+            
+            $results[$pkg] = ($returnVar === 0) ? 'Cleaned' : 'Failed';
+        }
 
-//         // Jalankan kembali launcher
-//         exec("timeout 5 $adb -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
+        // 2. Jalankan kembali Launcher utama setelah di-clear
+        exec("timeout 5 $adb -s $ip:5555 shell am start -n com.takeoff.launcher/.MainActivity 2>&1");
 
-//         return response()->json([
-//             'status' => 'success',
-//             'target_ip' => $ip,
-//             'results' => $results
-//         ]);
+        return response()->json([
+            'status' => 'success',
+            'target_ip' => $ip,
+            'results' => $results
+        ]);
 
-//     } catch (\Throwable $e) {
-//         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-//     }
-// }
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
+}
 
 
     /**
