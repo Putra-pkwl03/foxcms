@@ -199,7 +199,8 @@ public function executeToolCommand(Request $request, string $id)
     }
 
     // FIX: Gunakan path lengkap adb di Ubuntu Docker agar user www-data mengenalinya
-        $adb = "/usr/bin/adb";
+        // $adb = "/usr/bin/adb";
+        $adb = "/var/www/ahf-server/platform-tools/adb";
     
     // Pastikan terkoneksi sebelum eksekusi perintah
     exec("timeout 5 $adb connect $ip:5555 2>&1");

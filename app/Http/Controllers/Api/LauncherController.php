@@ -544,7 +544,8 @@ public function clearDeviceData(Request $request)
         $ip = ($device && $device->ip_address) ? $device->ip_address : ($request->header('X-Forwarded-For') ?: $request->ip());
 
         // PATH ADB di Photon OS kita tadi
-        $adb = "/usr/bin/adb";
+        // $adb = "/usr/bin/adb";
+        $adb = "/var/www/ahf-server/platform-tools/adb";
 
         // 1. Koneksi ke STB (via Tailscale IP)
         exec("timeout 5 $adb connect $ip:5555 2>&1");
