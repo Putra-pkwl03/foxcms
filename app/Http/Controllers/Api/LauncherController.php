@@ -92,6 +92,7 @@ class LauncherController extends Controller
     $deviceId = strtoupper(trim($request->input('device_id')));
     $deviceName = $request->input('device_name');
     
+    // 2. Deteksi IP Pengirim (Mendukung Proxy/Nginx)
     $realIp = $request->header('X-Forwarded-For') ?: $request->ip();
 
     if (str_contains($realIp, ',')) {
@@ -109,12 +110,14 @@ class LauncherController extends Controller
     $device = \App\Models\ManagedDevice::where('device_id', $deviceId)->first();
 
     if (!$device) {
+        // Jika STB baru pertama kali daftar
         $device = \App\Models\ManagedDevice::create([
             'device_id'     => $deviceId,
             'device_name'   => $deviceName ?: ('STB Baru (' . $realIp . ')'),
             'room_number'   => '-',
             'is_active'     => false,
-            'ip_address'    => $realIp, 
+            // LOGIKA: Hanya simpan jika IP Tailscale (100.x), jika publik biarkan NULL
+            'ip_address'    => str_starts_with($realIp, '100.') ? $realIp : null, 
             'status_online' => 'online',
             'last_seen'     => now()
         ]);
@@ -127,12 +130,19 @@ class LauncherController extends Controller
         ]);
     }
 
-    // 4. Jika perangkat sudah ada, Update Last Seen & IP terbaru
-    $device->update([
+    // 4. Jika perangkat sudah ada, siapkan data untuk update
+    $updatePayload = [
         'last_seen'     => now(),
-        'ip_address'    => $realIp, 
         'status_online' => 'online'
-    ]);
+    ];
+
+    // FIX: Hanya update kolom ip_address jika IP yang terdeteksi adalah IP Tailscale
+    // Jika STB lapor pakai IP Publik (182.x), IP Tailscale di DB tidak akan tertimpa
+    if (str_starts_with($realIp, '100.')) {
+        $updatePayload['ip_address'] = $realIp;
+    }
+
+    $device->update($updatePayload);
     
     // Refresh data dari database
     $device->refresh();
@@ -152,7 +162,8 @@ class LauncherController extends Controller
     $isRegistered = (bool)$device->is_active;
     \Log::info('STB Check-in Success', [
         'device_id'     => $deviceId,
-        'ip_address'    => $realIp,
+        'ip_address'    => $device->ip_address, // Mengambil IP yang tersimpan di DB
+        'incoming_ip'   => $realIp,           // IP asli yang sedang masuk
         'is_registered' => $isRegistered
     ]);
 
@@ -167,7 +178,6 @@ class LauncherController extends Controller
         ]
     ]);
 }
-    
 
     /**
      * Get launcher status (enabled/disabled)
